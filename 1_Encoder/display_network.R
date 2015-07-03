@@ -23,7 +23,7 @@ display_network <- function(X) {
         for (j in 1:n) {
             if (k>M) {break} 
             clim <- max(abs(X[,k]));
-            array[buf+(i-1)*(sz+buf)+(1:sz),buf+(j-1)*(sz+buf)+(1:sz)]=matrix(X[,k],sz,sz)/clim;
+            array[buf+(i-1)*(sz+buf)+(1:sz),buf+(j-1)*(sz+buf)+(1:sz)]=(matrix(X[,k],sz,sz)/clim;
             k=k+1;
         }
     }        
