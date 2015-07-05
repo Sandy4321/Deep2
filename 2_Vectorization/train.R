@@ -16,10 +16,12 @@ beta = 3;            # weight of sparsity penalty term
 
 source("loadMNIST.R")
 load_mnist() #load into the train list
-images <- t(train$x)
 
 labels = train$y;
-patches <- images[,1:10000]
+patches <- t(train$x)[,1:10000]
+
+#  scale
+patches <- patches/255
 
 # We are using display_network from the autoencoder code
 source("display_network.R")
@@ -46,6 +48,7 @@ theta = initializeParameters(hiddenSize, visibleSize);
 #  final submission of the visualized weights, please use parameters we 
 #  gave in Step 0 above.
 
+    
 ##======================================================================
 ## STEP 3: Gradient Checking
 #
@@ -63,7 +66,7 @@ source("computeNumericalGradient.R")
 source("sparseAutoencoderCostVec.R")
 source("sparseAutoencoderGradVec.R")
 
-# painfull slow !!!!
+# painfull slow - 2 hours for 10 pathes !!!!
 tstart <- Sys.time()
 numgrad <- computeNumericalGradient(theta, sparseAutoencoderCostVec,
                                         visibleSize = visibleSize,
@@ -79,8 +82,11 @@ tend - tstart
 tstart <- Sys.time()
 cost <- sparseAutoencoderCostVec(theta, visibleSize, hiddenSize, lambda, 
                             sparsityParam, beta, patches[,1:10]);
+
 grad <- sparseAutoencoderGradVec(theta, visibleSize, hiddenSize, lambda, 
                                  sparsityParam, beta, patches[,1:10]);
+
+
 tend <- Sys.time()
 tend - tstart
 
@@ -138,7 +144,7 @@ source("sparseAutoencoderCostVec.R")
 source("sparseAutoencoderGradVec.R")
 
 output <- optim(theta, 
-                sparseAutoencoderCostVec, 
+                sparseAutoencoderCostVec,
                 sparseAutoencoderGradVec, 
                 visibleSize = visibleSize,
                 hiddenSize = hiddenSize,
@@ -146,8 +152,8 @@ output <- optim(theta,
                 sparsityParam = sparsityParam,
                 beta = beta,
                 data = patches,
-                method="CG", 
-                control = list(trace=1, maxit=100))
+                method="L-BFGS-B", 
+                control = list(trace=1, maxit=400))
 
 opttheta <- output$par
 
@@ -158,8 +164,8 @@ opttheta <- output$par
 ## STEP 5: Visualization 
 # optim result
 W1 = matrix(opttheta[1:(hiddenSize*visibleSize)], hiddenSize, visibleSize);
-W1<-t(W1)
-display_network(W1); 
+W1<-(W1)
+display_network(W1[1:100,]); 
 
 
 # reserved plot for control display_network
@@ -217,8 +223,6 @@ display_network(W1);
 # image(1:8,1:8,matrix(W1[,a],8,8))
 # a=a+1
 # image(1:8,1:8,matrix(W1[,a],8,8))
-
-
 
 
 

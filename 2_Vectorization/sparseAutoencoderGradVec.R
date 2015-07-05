@@ -66,10 +66,10 @@ m <- dim(data)[2]
 # W1 - 196x784
 # W2 - 784x196
 A1 <- data #784x10000
-A2 <- sigmoid(W1%*%A1 + repmat(matrix(b1,length(b1),1),1,m)) #196x10000
-A3 <- sigmoid(W2%*%A2 + repmat(matrix(b2,length(b2),1),1,m)) #784x10000
+A2 <- sigmoid(W1%*%A1 + b1) #196x10000
+A3 <- sigmoid(W2%*%A2 + b2) #784x10000
 
-# add sparsity penalty
+#add sparsity penalty
 rho_hat <- apply(A2, 1, sum)
 rho_hat <- rho_hat/m
 rho <- sparsityParam
@@ -79,6 +79,7 @@ sparsity_delta = - rho/rho_hat + (1-rho)/(1-rho_hat)
 
 delta3 <- -(A1-A3)*A3*(1-A3) # 784x10000
 delta2 <-  (t(W2)%*%delta3 + beta*sparsity_delta)*A2*(1-A2) # 196x10000
+
 W2grad = delta3%*%t(A2) #784x196
 W1grad = delta2%*%t(A1) #196x784
 b2grad = apply(delta3,1,sum)

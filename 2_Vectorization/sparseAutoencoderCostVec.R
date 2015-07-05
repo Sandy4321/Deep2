@@ -25,7 +25,7 @@ b2 = theta[(2*hiddenSize*visibleSize+hiddenSize+1):length(theta)];
 
 # Cost and gradient variables (your code needs to compute these values). 
 # Here, we initialize them to zeros. 
-cost = 0;
+cost = 0
 rho_hat = rep(0, hiddenSize)
 
 ## ---------- YOUR CODE HERE --------------------------------------
@@ -63,11 +63,12 @@ m <- dim(data)[2]
 # W1 - 196x784
 # W2 - 784x196
 A1 <- data #784x10000
-A2 <- sigmoid(W1%*%A1 + repmat(matrix(b1,length(b1),1),1,m)) #196x10000
-A3 <- sigmoid(W2%*%A2 + repmat(matrix(b2,length(b2),1),1,m)) #784x10000
+A2 <- sigmoid(W1%*%A1 + b1) #196x10000
+A3 <- sigmoid(W2%*%A2 + b2) #784x10000
 
 
-cost = cost + sum((A3-A1)^2)/2
+cost = sum(((A3-A1)^2)/2)
+
 
 # add weight decay term
 cost = cost/m + (lambda/2)*sum(W12square)
@@ -76,10 +77,12 @@ cost = cost/m + (lambda/2)*sum(W12square)
 # add sparsity penalty
 rho_hat <- apply(A2, 1, sum)
 rho_hat <- rho_hat/m
+# print(rho_hat)
 rho <- sparsityParam
 sparsity_delta = - rho/rho_hat + (1-rho)/(1-rho_hat)
 KL = sum(rho*log(rho/rho_hat) + (1-rho)*log((1-rho)/(1-rho_hat)))
 cost = cost + beta*KL
+
 
 #-------------------------------------------------------------------
 # After computing the cost and gradient, we will convert the gradients back

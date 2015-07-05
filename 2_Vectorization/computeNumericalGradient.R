@@ -21,13 +21,33 @@ EPSILON = 0.0001
 
 m = length(theta)
 
+# library(doSNOW)
+# library(foreach)
+# 
+# cl<-makeCluster(4) #change the 2 to your number of CPU cores
+# registerDoSNOW(cl)
+
+# foreach(i=1:m) %dopar% {
+#     basis = rep(0,m)
+#     basis[i]=1
+#     #print(i)
+#     if(i %% 1000 == 0) print(i)
+#     numgrad[i] = (J(theta+EPSILON*basis,...) - J(theta-EPSILON*basis,...))/(2*EPSILON)
+# } 
+
+# stopCluster(cl)
 
 for (i in 1:m) {
-    basis = rep(0,m)
-    basis[i]=1
-    print(i)
-    #if(m %% 1 == 0) print(paste(m, "theta processed"))
-    numgrad[i] = (J(theta+EPSILON*basis,...) - J(theta-EPSILON*basis,...))/(2*EPSILON)
+    theta_minus <- theta
+    theta_minus[i] <- theta_minus[i]-EPSILON
+    theta_plus <- theta
+    theta_plus[i] <- theta_plus[i]+EPSILON
+    
+    numgrad[i] = (J(theta_plus,...) - J(theta_minus,...))/(2*EPSILON)
+    # debug print
+    if(i %% 1000 == 0) {
+        print(paste("theta #",i,"grad:",numgrad[i]))
+    }    
 }
 
 
