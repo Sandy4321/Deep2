@@ -32,5 +32,5 @@ display_network <- function(X) {
     
     par(xaxt="n", yaxt="n")
     col=gray(16:1/16) #gray scale
-    image(t(array), col=col) #+heat.colors(16)
+    image(t(array), col=heat.colors(16)) #+heat.colors(16)
 }

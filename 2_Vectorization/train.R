@@ -5,7 +5,7 @@
 
 visibleSize = 28*28;   # number of input units 
 hiddenSize = 196;     # number of hidden units 
-sparsityParam = 0.01;   # desired average activation of the hidden units.
+sparsityParam = 0.1;   # desired average activation of the hidden units.
 # (This was denoted by the Greek alphabet rho, which looks like a lower-case "p",
    #  in the lecture notes). 
 lambda = 0.003;     # weight decay parameter       
@@ -18,7 +18,8 @@ source("loadMNIST.R")
 load_mnist() #load into the train list
 
 labels = train$y;
-patches <- t(train$x)[,1:10000]
+patch_index <- sample(train$n,10000, replace=FALSE)
+patches <- t(train$x)[,patch_index]
 
 #  scale
 patches <- patches/255
@@ -115,48 +116,33 @@ theta = initializeParameters(hiddenSize, visibleSize);
 # function value and the gradient. In our problem,
 # sparseAutoencoderCost.m satisfies this.
 
-max_itertions = 400;      # Maximum number of iterations of L-BFGS to run 
-invisible = 0;              # Display on
+objective <- function(theta) {
+    cost <- sparseAutoencoderCostVec(theta, visibleSize, hiddenSize, lambda, 
+                                sparsityParam, beta, patches);
+    return(cost)
+}
 
+gradient <- function(theta) { 
+    grad <- sparseAutoencoderGradVec(theta, visibleSize, hiddenSize, lambda, 
+                                sparsityParam, beta, patches);
 
-
-# objective <- function(theta) {
-#     C <- sparseAutoencoderCostVec(theta, visibleSize, hiddenSize, lambda, 
-#                                 sparsityParam, beta, patches);
-#     return(C)
-# }
-# 
-# gradient <- function(theta) { 
-#     G <- sparseAutoencoderGradVec(theta, visibleSize, hiddenSize, lambda, 
-#                                 sparsityParam, beta, patches);
-# 
-#     return(G)
-# }
+    return(grad)
+}
 
 
 # optimize with optim() function L-BFGS-B
-# output <- optim(theta, objective, gradient, method="CG", 
-#                 control = list(trace=1, maxit=100))
-# 
-# opttheta <- output$par
 
 source("sparseAutoencoderCostVec.R")
 source("sparseAutoencoderGradVec.R")
 
 output <- optim(theta, 
-                sparseAutoencoderCostVec,
-                sparseAutoencoderGradVec, 
-                visibleSize = visibleSize,
-                hiddenSize = hiddenSize,
-                lambda = lambda, 
-                sparsityParam = sparsityParam,
-                beta = beta,
-                data = patches,
+                objective,
+                gradient,
                 method="L-BFGS-B", 
                 control = list(trace=1, maxit=400))
 
 opttheta <- output$par
-
+save(opttheta, file="opttheta.RData")
 
 
 
@@ -164,8 +150,8 @@ opttheta <- output$par
 ## STEP 5: Visualization 
 # optim result
 W1 = matrix(opttheta[1:(hiddenSize*visibleSize)], hiddenSize, visibleSize);
-W1<-(W1)
-display_network(W1[1:100,]); 
+W1<-t(W1)
+display_network(W1[,1:100]); 
 
 
 # reserved plot for control display_network
