@@ -33,8 +33,3 @@ load_mnist <- function() {
     train$y <<- load_label_file('train-labels.idx1-ubyte')
     test$y <<- load_label_file('t10k-labels.idx1-ubyte')  
 }
-
-
-show_digit <- function(arr784, col=gray(12:1/12), ...) {
-    image(matrix(arr784, nrow=28)[,28:1], col=col, ...)
-}
