@@ -3,8 +3,6 @@ sparseAutoencoderGradVec <- function(theta, visibleSize, hiddenSize,
 
 # VECTORIZED sparseAutoencoder gradient calculation
 
-library(pracma)    
-    
 # visibleSize: the number of input units (probably 64) 
 # hiddenSize: the number of hidden units (probably 25) 
 # lambda: weight decay parameter

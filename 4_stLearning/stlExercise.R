@@ -39,17 +39,21 @@ mnistLabels = train$y;
 mnistData = t(train$x)/255
 rm(train)
 # Set Unlabeled Set (All Images)
-unlabeledTrainingImages <- mnistData
+#unlabeledTrainingImages <- mnistData
 
 # Simulate a Labeled and Unlabeled set
-labeledSet   = mnistLabels[mnistLabels >= 0 & mnistLabels <= 4];
-unlabeledSet = mnistLabels[mnistLabels >= 5];
+unlabeledSet = which(mnistLabels >= 5);
+unlabeledData = mnistData[, unlabeledSet];
+
+
+labeledSet   = which(mnistLabels >= 0 & mnistLabels <= 4);
+
 
 numTrain = round(length(labeledSet)/2);
 trainSet = labeledSet[1:numTrain];
 testSet  = labeledSet[(numTrain+1):length(labeledSet)];
 
-unlabeledData = mnistData[, unlabeledSet];
+
 
 trainData   = mnistData[, trainSet];
 trainLabels = mnistLabels[trainSet] + 1; # Shift Labels to the Range 1-5
@@ -75,15 +79,15 @@ theta = initializeParameters(hiddenSize, inputSize);
 ## ----------------- YOUR CODE HERE ----------------------
 #  Find opttheta by running the sparse autoencoder on
 #  unlabeledTrainingImages
-tstart <- Sys.time()
+
 objective <- function(theta) {
     cost <- sparseAutoencoderCostVec(theta, inputSize, hiddenSize, lambda, 
-                                     sparsityParam, beta, unlabeledTrainingImages);
+                                     sparsityParam, beta, unlabeledData);
     return(cost)
 }
 gradient <- function(theta) { 
     grad <- sparseAutoencoderGradVec(theta, inputSize, hiddenSize, lambda, 
-                                     sparsityParam, beta, unlabeledTrainingImages);
+                                     sparsityParam, beta, unlabeledData);
     return(grad)
 }
 
@@ -91,33 +95,25 @@ gradient <- function(theta) {
 source("sparseAutoencoderCostVec.R")
 source("sparseAutoencoderGradVec.R")
 
+tstart <- Sys.time()
 output <- optim(theta, 
                 objective,
                 gradient,
                 method="L-BFGS-B", 
                 control = list(trace=1, maxit=maxIter))
 opttheta <- output$par
-
-
-
-
 tend <- Sys.time()
 tend - tstart
-#opttheta = theta; 
 
-
-
-
-
-
-
-
+save(opttheta, file="opttheta.RData")
 
 ## -----------------------------------------------------
                           
 # Visualize weights
-W1 = reshape(opttheta(1:hiddenSize * inputSize), hiddenSize, inputSize);
-display_network(W1');
+source("display_network.R")
+W1 = matrix(opttheta[1:(hiddenSize*inputSize)], hiddenSize, inputSize);
+W1<-t(W1)
+display_network(W1[,1:100]);
 
 ##======================================================================
 ## STEP 3: Extract Features from the Supervised Dataset
@@ -125,18 +121,19 @@ display_network(W1');
 #  You need to complete the code in feedForwardAutoencoder.m so that the 
 #  following command will extract features from the data.
 
-trainFeatures = feedForwardAutoencoder(opttheta, hiddenSize, inputSize, ...
+source("feedForwardAutoencoder.R")
+trainFeatures = feedForwardAutoencoder(opttheta, hiddenSize, inputSize, 
                                        trainData);
 
-testFeatures = feedForwardAutoencoder(opttheta, hiddenSize, inputSize, ...
-                                       testData);
+testFeatures = feedForwardAutoencoder(opttheta, hiddenSize, inputSize, 
+                                      testData);
 
 ##======================================================================
 ## STEP 4: Train the softmax classifier
 
-softmaxModel = struct;  
+ 
 ## ----------------- YOUR CODE HERE ----------------------
-#  Use softmaxTrain.m from the previous exercise to train a multi-class
+#  Use softmaxTrain.R from the previous exercise to train a multi-class
 #  classifier. 
 
 #  Use lambda = 1e-4 for the weight regularization for softmax
@@ -144,12 +141,16 @@ softmaxModel = struct;
 # You need to compute softmaxModel using softmaxTrain on trainFeatures and
 # trainLabels
 
+library(Matrix)
+library(pracma) 
 
+lambda = 1e-4
+maxIter = 100
+numClasses = length(unique(trainLabels))
 
-
-
-
-
+source("softmaxTrain.R")
+source("softmaxCost.R")
+softmaxModel = softmaxTrain(inputSize, numClasses, lambda, trainFeatures, trainLabels, maxIter);
 
 
 
@@ -163,7 +164,11 @@ softmaxModel = struct;
 # Compute Predictions on the test set (testFeatures) using softmaxPredict
 # and softmaxModel
 
+source("softmaxPredict.R")
+pred = softmaxPredict(softmaxModel, testFeatures);
 
+acc = mean(testLabels == pred);
+print(paste("Accuracy: ", acc * 100));
 
 
 

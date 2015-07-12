@@ -22,7 +22,7 @@ b1 = theta[(2*hiddenSize*visibleSize+1):(2*hiddenSize*visibleSize+hiddenSize)];
 b2 = theta[(2*hiddenSize*visibleSize+hiddenSize+1):length(theta)];
 
 # debug print
-print(theta[1:4])
+# print(theta[1:4])
 
 # Cost and gradient variables (your code needs to compute these values). 
 # Here, we initialize them to zeros. 
